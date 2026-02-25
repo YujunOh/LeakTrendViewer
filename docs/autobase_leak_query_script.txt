@@ -1,0 +1,129 @@
+// ================================================================
+// AutoBase script - Leak Check Detect System
+// (embedded 내장 스크립트용)
+// NOTE: 내장 스크립트에서는 \\ 사용 (CTLX 파일에서는 / 사용)
+// ================================================================
+//
+// 아래 3가지 스크립트 중 원하는 것을 버튼에 넣으세요.
+//
+//  [1] 자료 조회 버튼     — 기존 ExcelReport 방식 (느림)
+//  [2] Excel Report 버튼  — LeakTrendViewer.exe 실행 (빠름, 추천)
+//  [3] WPF 뷰어 열기 버튼 — LeakTrendViewer.exe GUI만 열기
+//
+// ================================================================
+
+
+// ================================================================
+// [1] 자료 조회 버튼 (기존 ExcelReport 방식)
+// ================================================================
+// 변수 등록 필요: y, m, d, s_year, s_month, s_day, s_hour, s_min,
+//   e_hour, e_min, filename(string), start_ymd(string), end_ymd(string),
+//   query(string), result, retn
+
+y = @GetDateYear();
+m = @GetDateMon();
+d = @GetDateDay();
+result = 0;
+
+s_year=@ComboBoxGetCurSel("조회시작년") + (y-3);
+s_month=@ComboBoxGetCurSel("조회시작월") + 1;
+s_day=@ComboBoxGetCurSel("조회시작일") + 1;
+s_hour=@ComboBoxGetCurSel("조회시작시");
+s_min=@ComboBoxGetCurSel("조회시작분");
+
+e_hour=@ComboBoxGetCurSel("조회끝시");
+e_min=@ComboBoxGetCurSel("조회끝분");
+
+$SYEAR=@ComboBoxGetCurSel("조회시작년") + (y-3);
+$SMONTH=@ComboBoxGetCurSel("조회시작월") + 1;
+$SDAY=@ComboBoxGetCurSel("조회시작일") + 1;
+$SHOUR=@ComboBoxGetCurSel("조회시작시");
+$SMIN=@ComboBoxGetCurSel("조회시작분");
+
+// Set the file name //
+@sprintf(filename,"C:\\B_MilliData\\%04d%02d%02d_000000.mdb",s_year,s_month,s_day);
+
+retn = @FileExists(filename);
+
+if(retn == 1)
+{
+
+// Delete File //
+@FileDelete("C:\\B_MilliData\\MilliData.mdb");
+
+// File Copy //
+result = @FileCopy(filename, "C:\\B_MilliData\\MilliData.mdb", 0);
+
+if (result == 1)
+     {
+
+@sprintf(start_ymd,"%04d-%02d-%02d %02d:%02d:00",s_year,s_month,s_day,s_hour,s_min);
+@GlobalSetVar("Start_Time", start_ymd);
+
+@sprintf(end_ymd,"%04d-%02d-%02d %02d:%02d:00",s_year,s_month,s_day,e_hour,e_min);
+@GlobalSetVar("End_Time", end_ymd);
+
+@sprintf(query,"select * from Data where  [Data Time] >=#%s#  and  [Data Time] <=#%s# order by [Data Count]",start_ymd,end_ymd);
+@GlobalSetVar("search3", query);
+
+@ExcelReportPrepare("C:\\HMI\\LEAK CHECK DETECT SYSTEM\\ExcelReport\\보고서.xls","", 0, 0, $SYEAR,$SMONTH,$SDAY,$SHOUR,0);
+@ExcelReportRun();
+
+result = 0;
+
+     }
+
+retn = 0;
+
+}
+
+
+else {
+
+   @Message("데이터베이스 파일이 존재하지 않습니다..");
+
+          }
+
+@ObjectSetBackColor("ExcelReport1", @RGB(255, 188, 0));
+
+
+// ================================================================
+// [2] Excel Report 버튼 (LeakTrendViewer로 빠른 엑셀 생성)
+//     — 콤보박스에서 날짜/시간 읽어서 바로 엑셀 생성 + 자동 열기
+//     — 기존 ExcelReport보다 훨씬 빠름 (1~2초)
+// ================================================================
+// 변수 등록 필요: y, s_year, s_month, s_day, s_hour, s_min,
+//   e_hour, e_min, args(string)
+//
+// ---- 여기부터 복사 ----
+
+y = @GetDateYear();
+
+s_year=@ComboBoxGetCurSel("조회시작년") + (y-3);
+s_month=@ComboBoxGetCurSel("조회시작월") + 1;
+s_day=@ComboBoxGetCurSel("조회시작일") + 1;
+s_hour=@ComboBoxGetCurSel("조회시작시");
+s_min=@ComboBoxGetCurSel("조회시작분");
+
+e_hour=@ComboBoxGetCurSel("조회끝시");
+e_min=@ComboBoxGetCurSel("조회끝분");
+
+@sprintf(args,"--auto-export --start \"%04d-%02d-%02d %02d:%02d\" --end \"%04d-%02d-%02d %02d:%02d\"",s_year,s_month,s_day,s_hour,s_min,s_year,s_month,s_day,e_hour,e_min);
+
+@ProcessStart("C:\\LeakTrendViewer\\LeakTrendViewer.exe", args);
+
+// ---- 여기까지 복사 ----
+
+
+// ================================================================
+// [3] WPF 뷰어 열기 버튼 (LeakTrendViewer GUI 열기)
+//     — 프로그램만 열어서 사용자가 직접 날짜 선택 + Excel Report
+//     — 폴더 변경, 빠른 선택(오늘/어제/최근7일 등) 가능
+// ================================================================
+// 변수 등록 불필요 (인수 없이 실행)
+//
+// ---- 여기부터 복사 ----
+
+@ProcessStart("C:\\LeakTrendViewer\\LeakTrendViewer.exe", "");
+
+// ---- 여기까지 복사 ----

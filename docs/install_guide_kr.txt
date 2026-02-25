@@ -1,0 +1,25 @@
+LeakTrendViewer 실행/설치 빠른 가이드
+
+1) 설치파일 만들기(권장)
+- PowerShell 열기
+- 아래 실행:
+  powershell -ExecutionPolicy Bypass -File .\scripts\build-installer.ps1
+
+2) 결과 확인
+- Inno Setup이 설치되어 있으면:
+  .\dist\LeakTrendViewerSetup.exe 생성
+- Inno Setup이 없으면:
+  .\publish\win-x64\LeakTrendViewer.exe 생성 (바로 실행 가능)
+
+3) 앱 실행
+- 설치형: LeakTrendViewerSetup.exe 실행 후 설치
+- 포터블형: publish\win-x64\LeakTrendViewer.exe 더블클릭
+
+4) 데이터 폴더
+- 기본 탐색 경로:
+  C:\B_MilliData
+  C:\HMI\LEAK CHECK DETECT SYSTEM
+
+5) 주의사항
+- MDB 연결에는 PC에 OLEDB(ACE/Jet) 드라이버가 필요할 수 있음
+- 파일 잠김/손상 시 앱 하단 상태바 경고 메시지 확인
